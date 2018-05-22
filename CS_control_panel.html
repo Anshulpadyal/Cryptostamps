@@ -1,0 +1,1161 @@
+<html>
+<head>
+<title>Demonstration Ethereum Dapp</title
+
+</head
+
+
+
+<body>
+
+
+
+
+Total Ethers Transacted:
+<p id="totalethers"></p>
+
+
+
+
+<button id="button1">Create Stamp</button><br>
+<br>
+
+TokenId<input id="token" type="text"><br>
+
+<button id="button2">Dissolve</button><br>
+<br>
+
+
+<button id="button3">Purchase</button><br>
+<br>
+
+<button id="button4">Payout</button><br>
+<br>
+
+<button id="button">Payout</button><br>
+<br>
+
+<input id="stampId" size = "50" type = "number" min = "0"  onchange = "updateInput(this.value)" placeholder="Enter your stamp Id"><br>
+
+<br>
+Owner of the stamp is:
+<p id="ownerstamp"></p>
+<br>
+Price of the stamp is:
+<p id="pricestamp"></p>
+<br>
+
+
+
+
+Next price of the stamp is:
+<p id="nextpricestamp"></p>
+<br>
+
+Total Transactions of the stamp:
+<p id="stamptransactions"></p>
+<br>
+
+
+Tokens of the logged in account are:
+<p id="tokensofowner"></p>
+<br>
+
+
+
+
+
+
+<!-- Works with web3.min.js version 0.19.0. This web page does not work with version 1.0.0 and up -->
+<script type="text/javascript" src="http://www.crypto-stamps.com/scripts/dist/web3.min.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script type="text/javascript">
+if (typeof web3 !== 'undefined') {
+    // Use Mist/MetaMask's provider
+    window.web3 = new Web3(web3.currentProvider);
+    console.log("Found Web3");
+  } else {
+    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+    window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+  }
+  startApp();
+  
+  
+  
+  
+  function startApp(){
+  monitorAccountChanges();
+    reloadPageWhenNoNetwork();
+}
+
+
+
+
+
+ function reloadPageWhenNoNetwork(){
+  setInterval(function(){
+    if(!web3.isConnected()){
+      // If an Ethereum node is found, reload web page.
+      eventHandlerPageLoad();
+    }
+  }, 5000);
+}
+
+function monitorAccountChanges() {
+  // Declare accountInterval here! Clear the variable if there is no Ethereum node found.
+  let accountInterval;
+
+  // Check if an Ethereum node is found.
+  if(web3.isConnected()){
+    
+   
+    var add=document.getElementById('add');
+    add.value = web3.eth.accounts;
+    let account = web3.eth.accounts[0];
+
+    // At a time interval of 1 sec monitor account changes
+    accountInterval = setInterval(function() {
+
+      // Monitor account changes. If you switch account, for example in MetaMask, it will detect this.
+      // See: https://github.com/MetaMask/faq/blob/master/DEVELOPERS.md
+      if (web3.eth.accounts[0] !== account) {
+        account = web3.eth.accounts[0];
+        add.value = web3.eth.accounts;
+        console.log(account);
+        
+      } 
+      if(account != null) {
+        
+		
+		
+      }
+
+      // Check which Ethereum network is used
+     
+
+    }, 1000); // end of accountInterval = setInterval(function()
+
+  } else {
+    // Stop the accountInterval
+    clearInterval(accountInterval);
+    
+  }
+}
+
+
+
+
+var Cryptostamps =web3.eth.contract(
+[
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_to",
+				"type": "address"
+			},
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "ceoAddress",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_to",
+				"type": "address"
+			}
+		],
+		"name": "payout",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "implementsERC721",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "stampIndextodissolved",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"name": "total",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "stampIndexToOwner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_from",
+				"type": "address"
+			},
+			{
+				"name": "_to",
+				"type": "address"
+			},
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_newCEO",
+				"type": "address"
+			}
+		],
+		"name": "setCEO",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "OwnertostampIndex",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_newCOO",
+				"type": "address"
+			}
+		],
+		"name": "setCOO",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "unpausecontract",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "ownerOf",
+		"outputs": [
+			{
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_owner",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"name": "balance",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "nextpriceOf",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "cutowner",
+				"type": "uint256"
+			}
+		],
+		"name": "setcut",
+		"outputs": [
+			{
+				"name": "cuts",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_owner",
+				"type": "address"
+			}
+		],
+		"name": "tokensOfOwner",
+		"outputs": [
+			{
+				"name": "ownerTokens",
+				"type": "uint256[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "stampIndexToApproved",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "NAME",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "number",
+				"type": "uint256"
+			}
+		],
+		"name": "setnumber",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_to",
+				"type": "address"
+			},
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "stampCreatedCount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "pausecontract",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "cooAddress",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "takeOwnership",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "priceOf",
+		"outputs": [
+			{
+				"name": "price",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "getStamp",
+		"outputs": [
+			{
+				"name": "birthtimestamp",
+				"type": "uint256"
+			},
+			{
+				"name": "sellingPrice",
+				"type": "uint256"
+			},
+			{
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "stampIndextotransactions",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "number",
+				"type": "uint256"
+			}
+		],
+		"name": "setdissolveprice",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "purchase",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "SYMBOL",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "dissolve",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "totaletherstransacted",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_owner",
+				"type": "address"
+			},
+			{
+				"name": "_price",
+				"type": "uint256"
+			}
+		],
+		"name": "createStamp",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "stampBirth",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "oldPrice",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "newPrice",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "prevOwner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "winner",
+				"type": "address"
+			}
+		],
+		"name": "TokenSold",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"name": "approved",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "Dissolved",
+		"type": "event"
+	}
+]
+
+
+);
+
+
+
+  
+var crypt= Cryptostamps.at('0xA181b8c9f6b43B8252c6c9826Cf5feba362B542e');
+
+  
+var Price=document.getElementById('prc');
+var ow=document.getElementById('ow');
+
+var token=document.getElementById('token');
+var pur = document.getElementById('pur');
+
+
+var ownerstamp = document.getElementById('ownerstamp');
+
+var stampId = document.getElementById('stampId');
+
+var number = 4;
+
+var dissolveEvent = crypt.Dissolved();
+
+var stamparray = [0,2,32,11,17];
+var pricearray = [];
+console.log(stamparray);
+
+
+
+function getpriceofarray(){
+  
+    
+         var i;
+         for(i = 0; i<stamparray.length;i++)
+	 {crypt.priceOf(stamparray[i],function(err,res){
+		if(!err)
+		{
+		 pricearray.push((web3.toWei(res, "ether")/1000000000000000000000000000000000000).toFixed(4));
+                 console.log(pricearray);
+		}
+		else
+		 console.error(err);
+		
+		
+	});}
+		
+	
+	
+  
+}
+
+
+getpriceofarray();
+
+document.getElementById("demoprice").innerHTML = pricearray;
+
+console.log(pricearray);
+
+
+
+
+
+dissolveEvent.watch(function(error, result){
+            if (!error)
+                {
+                    
+                    $("#dissolved").html(result.args.owner + ' has dissolved token Id :' + result.args.tokenId );
+                } else {
+                    
+                    console.log(error);
+                }
+        });
+
+
+
+
+
+//to get constant input of the stamp Id value
+function updateInput(ish){
+    
+	console.log(stampId.value);
+	if(stampId.value!= document.getElementById('stampId').value)
+	{document.getElementById('stampId').value = stampId.value;
+		console.log(stampId.value);
+	}
+}
+
+//to get current price of the stampId
+
+var buyprice;
+function getprice(){
+  setInterval(function(){
+    
+	 crypt.priceOf(stampId.value,function(err,res){
+		if(!err)
+		{document.getElementById('pricestamp').innerHTML =  (web3.toWei(res, "ether")/1000000000000000000000000000000000000).toFixed(4);
+		 buyprice = (web3.toWei(res, "ether")/1000000000000000000000000000000000000);
+		}
+		else
+		 console.error(err);
+		
+		
+	});
+		
+	
+	
+  }, 1000);
+}
+
+getprice();
+
+
+
+
+
+
+/*function getnextprice(){
+  setInterval(function(){
+    
+	 crypt.nextpriceOf(stampId.value,function(err,res){
+		if(!err)
+		{document.getElementById('nextpricestamp').innerHTML =  (web3.toWei(res, "ether")/1000000000000000000000000000000000000).toFixed(4);
+		 
+		}
+		else
+		 console.error(err);
+		
+		
+	});
+		
+	
+	
+  }, 1000);
+}
+
+getnextprice();*/
+
+
+
+//to get the owner of the stamp whose Id is known
+function getowner(){
+  setInterval(function(){
+    
+	 crypt.stampIndexToOwner(stampId.value,function(err,res){
+		if(!err)
+		{document.getElementById('ownerstamp').innerHTML =  res;
+		 
+		}
+		else
+		 console.error(err);
+		
+		
+	});
+		
+	
+	
+  }, 1000);
+}
+
+getowner();
+
+
+
+function gettotalethers(){
+  setInterval(function(){
+    
+	 crypt.totaletherstransacted(function(err,res){
+		if(!err)
+		{document.getElementById('totalethers').innerHTML =  res;
+		 
+		}
+		else
+		 console.error(err);
+		
+		
+	});
+		
+	
+	
+  }, 1000);
+}
+
+gettotalethers();
+
+
+
+
+function gettransactions(){
+  setInterval(function(){
+    
+	 crypt.stampIndextotransactions(stampId.value,function(err,res){
+		if(!err)
+		{document.getElementById('stamptransactions').innerHTML =  res;
+		 
+		}
+		else
+		 console.error(err);
+		
+		
+	});
+		
+	
+	
+  }, 1000);
+}
+
+gettransactions();
+
+
+
+
+//to get my stamps for logged in account
+function getmystamps(){
+  setInterval(function(){
+    
+	 crypt.tokensOfOwner(add.value
+
+,function(err,res){
+		if(!err)
+		{document.getElementById('tokensofowner').innerHTML =  res;
+		  console.log(res);
+		}
+		else
+		 console.error(err);
+		
+		
+	});
+		
+	
+	
+  }, 1000);
+}
+
+getmystamps();
+
+
+
+
+button1.addEventListener('click',function(){
+
+
+
+ crypt.createStamp(ow.value,Price.value,function(error, result){
+   if(!error)
+     console.log(result)
+ else
+    console.error(error);
+ });
+ 
+ 
+
+
+});
+
+
+//to dissolve an existing stamp - only owner of that stamp can do that
+$("#button2").click(function(){
+
+
+ crypt.dissolve($("#token").val(),function(error, result){
+   if(!error)
+     console.log(result)
+  else
+  console.error(error);
+ });
+   
+ 
+ 
+
+
+});
+
+
+//to purchase a token of anyone - any user with sufficient balance can do this
+button3.addEventListener('click',function(){
+
+
+ crypt.purchase(token.value,{value:web3.toWei(buyprice, "ether")},function(error, result){
+   if(!error)
+     console.log(result)
+  else
+  console.error(error);
+ });
+ 
+ 
+});
+
+button4.addEventListener('click',function(){
+
+
+ crypt.payout(0xDf937b071199DaFdB3b96B09533E286809b803aa
+,function(error, result){
+   if(!error)
+     console.log(result)
+  else
+  console.error(error);
+  
+  });
+ 
+ 
+});
